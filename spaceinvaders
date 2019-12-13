@@ -1,0 +1,796 @@
+
+final float speedBullet = 10;
+
+final int gunHeight = 20;
+
+
+
+// les coordonnées du canon
+
+float gunX, gunY;
+
+// les coordonnées du missile
+
+float bulletX, bulletY;
+
+// les coordonnées de l'invader
+
+float invaderX, invaderY;
+
+// le vecteur vitesse de l'invader
+
+float invaderVx, invaderVy;
+
+
+
+// est-ce qu'un missile a été tiré ?
+
+boolean bullet;
+
+// est-ce que l'invader a été touché ?
+
+boolean hit;
+
+// est-ce que la partie est finie ?
+
+boolean gameOver;
+
+// le score et le meilleur score
+
+int score, best;
+
+// l'horloge
+
+int clock;
+
+// le nombre de ticks d'horloge entre 2 activations de l'invader
+
+int clockPeriod;
+
+// le temps pendant lequel l'invader touché change de couleur
+
+int hitPeriod;
+
+float [] [] bulletcount = new float [10] [2];
+
+int j, i;
+
+// les images de l'invader et du canon
+
+PImage night;
+
+PImage []invader = new PImage[10];
+
+PImage gun, invader2, invader3, invader4, invader5, invader6, invader7, invader8, invader9;
+
+// les polices pour le texte
+
+PFont fonte16, fonte32;
+
+int [][] invadersPos = new int [10][6];
+
+boolean currentfire;
+
+//////////////////////////////////////////////////////////////
+
+//
+
+// La fonction d'initialisation
+
+//
+
+//////////////////////////////////////////////////////////////
+
+void setup() {
+
+// fixe la taille de la fenêtre
+
+size(800, 450);
+
+night = loadImage("c:\\SpaceInvadersdm3\\data\\night.jpg");
+
+// change les paramètres de dessin
+
+strokeWeight(3);
+
+// charge les images en mémoire
+
+invader[0] = loadImage("invader1.png");
+
+invader[1] = loadImage("invader2.png");
+
+invader[2] = loadImage("invader3.png");
+
+invader[3] = loadImage("invader4.png");
+
+invader[4] = loadImage("invader5.png");
+
+invader[5] = loadImage("invader6.png");
+
+invader[6] = loadImage("invader7.png");
+
+invader[7] = loadImage("invader8.png");
+
+invader[8] = loadImage("invader9.png");
+
+invader[9] = loadImage("invader1.png");
+
+night = loadImage("night.jpg");
+
+gun = loadImage("gun.png");
+
+// les images seront centrées sur le point dont on donne les coordonnées
+
+imageMode(CENTER);
+
+
+
+// charge les polices de caractères en mémoire
+
+fonte16 = createFont("joystix.ttf", 16);
+
+fonte32 = createFont("joystix.ttf", 32);
+
+// initialise les paramètres pour l'affichage du texte
+
+textAlign(LEFT, CENTER);
+
+textFont(fonte16);
+
+// au départ, pas de meilleur score
+
+best = 0;
+
+// 50 appels par seconde de la fonction draw
+
+frameRate(50);
+
+
+
+// appelle la fonction d'initialisation du jeu
+
+newGame();
+
+}
+
+
+
+//////////////////////////////////////////////////////////////
+
+//
+
+// La boucle de rendu
+
+//
+
+//////////////////////////////////////////////////////////////
+
+void draw() {
+
+// incrémente l'horloge
+
+clock = (clock + 1) % clockPeriod;
+
+
+
+// le suivi du missile
+
+goBullet();
+
+// l'activation de l'invader
+
+goInvader();
+
+// le test de collision missile/invader
+
+testHit();
+
+
+
+// met à jour l'affichage
+
+repaint();
+
+// gestion de l'interaction
+
+control();
+
+}
+
+
+
+//////////////////////////////////////////////////////////////
+
+//
+
+// L'initialisation du jeu
+
+//
+
+//////////////////////////////////////////////////////////////
+
+void newGame() {
+
+// la position du canon au centre de l'écran, en bas
+
+gunX = width / 2;
+
+gunY = height - gunHeight;
+
+// pas de missile tiré
+
+bullet = false;
+
+// la partie n'est pas finie
+
+gameOver = false;
+
+// position et vitesse de l'invader
+
+
+
+for (int i =0; i<10; ++i) {
+
+
+
+invadersPos [i][0]= (int)random (50, 450);
+
+invadersPos [i][1]= (int)random (10, 100);
+
+invadersPos[i][2] = (int)random (-20, 20);
+
+invadersPos[i][3] = (int)random (1, 255);
+
+invadersPos[i][4] = (int)random (1, 255);
+
+invadersPos[i][5] = (int)random (1, 255);
+
+}
+
+
+
+// paramètres d'horloge
+
+clock = 0;
+
+clockPeriod = 30;
+
+// score remis à 0
+
+score = 0;
+
+}
+
+//////////////////////////////////////////////////////////////
+
+//
+
+// Le tir d'un missile
+
+//
+
+//////////////////////////////////////////////////////////////
+
+void fire() {
+
+// place le missile au bout du canon
+
+for ( i=0; i<10; ++i) {
+
+bulletcount[i][0] = gunX;
+
+bulletcount[i][1]= gunY - 30;
+
+// un missile a été tiré
+
+bullet = true;
+
+}
+
+}
+
+
+
+//////////////////////////////////////////////////////////////
+
+//
+
+// L'animation du missile
+
+//
+
+//////////////////////////////////////////////////////////////
+
+void goBullet() {
+
+for ( int i=0; i<2; i++) {
+
+for ( int j=0; j<10; j++) {
+
+
+
+// si un missile a été tiré
+
+if (bullet) {
+
+// on le déplace verticalement
+
+bulletcount[i][1] -= speedBullet;
+
+}
+
+//* if (bulletcount[i][1]>height) {
+
+///* bulletcount[i][1]=-bulletcount[i][0];
+
+//* bullet= true;}
+
+
+
+// si il sort en haut, il n'y a plus de missile tiré
+
+if (bulletcount[i][1] < 0) {
+
+bullet = false;
+
+}
+
+} }
+
+}
+
+
+
+//////////////////////////////////////////////////////////////
+
+//
+
+// L'animation de l'invader
+
+//
+
+//////////////////////////////////////////////////////////////
+
+void goInvader()
+
+{
+
+
+
+for ( i=0; i<10; i++)
+
+{
+
+
+
+// quand l'horloge revient à 0, on déplace l'invader horizontalement
+
+if (clock == 0)
+
+{
+
+
+
+invadersPos[i][0] += invadersPos[i][2];
+
+
+
+// gère le déplacement de l'invader quand il arrive à droite
+
+//if (invadersPos[i][2]> 0) {
+
+
+
+if (invadersPos[i][0]> width -50)
+
+{
+
+if (clockPeriod > 2)
+
+{
+
+//for ( i=0; i<10; i++) {
+
+clockPeriod -= 2;
+
+}
+
+invadersPos[i][2] *= -1;
+
+invadersPos[i][1] += 25;
+
+}
+
+
+
+
+
+// gère le déplacement de l'invader quand il arrive à droite
+
+else if (invadersPos[i][0] < 50)
+
+{
+
+if (clockPeriod > 2)
+
+{
+
+//for ( i=0; i<10; i++) {
+
+clockPeriod -= 2;
+
+}
+
+invadersPos[i][2] *= -1;
+
+invadersPos[i][1] += 25;
+
+}
+
+
+
+// la partie est finie quand l'invader arrive en bas
+
+//for ( i=0; i<10; i++) {
+
+if (invadersPos[i][1] >= height)
+
+gameOver = true;
+
+//}
+
+}
+
+}
+
+}
+
+//////////////////////////////////////////////////////////////
+
+//
+
+// La mise à jour de la fenêtre d'animation
+
+// Cette fonction utilise notamment les fonctions :
+
+// - drawGun pour afficher le canon
+
+// - drawInvader pour afficher l'invader
+
+// - drawBullet pour afficher le missile
+
+//
+
+//////////////////////////////////////////////////////////////
+
+void repaint() {
+
+// fond de la fenêtre en blanc
+
+background(night);
+
+
+
+// affiche l'écran Game Over si la partie est finie
+
+if (gameOver) {
+
+gameOver();
+
+}
+
+// sinon affiche le jeu
+
+else {
+
+// affiche les éléments du jeu
+
+drawGun();
+
+drawBullet();
+
+drawInvader();
+
+drawScore();
+
+}
+
+}
+
+
+
+//////////////////////////////////////////////////////////////
+
+//
+
+// L'affichage du canon
+
+//
+
+//////////////////////////////////////////////////////////////
+
+void drawGun() {
+
+// choisit la couleur
+
+tint(0, 123, 0);
+
+// affiche le canon
+
+image(gun, gunX, gunY);
+
+}
+
+
+
+//////////////////////////////////////////////////////////////
+
+//
+
+// L'affichage de l'invader
+
+//
+
+//////////////////////////////////////////////////////////////
+
+void drawInvader() {
+
+
+
+for (int i=0; i<invadersPos.length; ++i) { // quand il est touché
+
+if (hit) {
+
+// il s'affiche en rouge
+
+tint (255, invadersPos[i][3] ,invadersPos[i][5] );
+
+// pendant un certain temps
+
+hitPeriod--;
+
+if (hitPeriod == 0)
+
+hit = false;
+
+} else
+
+// sinon, il est noir
+
+tint (invadersPos[i][3], invadersPos[i][4], invadersPos[i][5]);
+
+}
+
+
+
+
+
+for (int i = 0; i<10; i++)
+
+{
+
+tint (invadersPos[i][3], invadersPos[i][4], invadersPos[i][5]);
+
+image(invader[i], invadersPos[i][0], invadersPos[i][1]);
+
+}
+
+}
+
+
+
+//////////////////////////////////////////////////////////////
+
+//
+
+// L'affichage du missile
+
+//
+
+//////////////////////////////////////////////////////////////
+
+void drawBullet() {
+
+for ( i=0; i<10; i++) {
+
+for (j=0; j<2; j++) {
+
+if ( bulletcount[0][j]>=0 && bulletcount[0][j]<=width &&
+
+bulletcount[1][j]<=height){
+
+// une simple ligne verticale
+
+stroke(255,255,0);
+
+line(bulletcount[i][0], bulletcount[i][1], bulletcount[i][0], bulletcount[i][1]-5);
+
+}
+
+}
+
+}
+
+}
+
+//////////////////////////////////////////////////////////////
+
+//
+
+// Teste si le missile percute l'invader
+
+//
+
+//////////////////////////////////////////////////////////////
+
+void testHit() {
+
+for ( int i=0; i<10; i++) {
+
+for ( int j=0; j<10; j++) {
+
+// si le missile est dans la "boîte englobante" de l'invader
+
+if ((bulletcount[j][0] >= invadersPos[i][0] - 25) &&
+
+(bulletcount[j][0] <= invadersPos[i][0] + 25) &&
+
+(bulletcount[j][1]<= invadersPos[i][1] + 18) &&
+
+(bulletcount[j][1] >= invadersPos[i][1] - 18)) {
+
+// met à jour le score
+
+score=++score%bulletcount.length;
+
+if (score > best)
+
+best = score;
+
+// l'invader est touché
+
+hit = true;
+
+hitPeriod = 10;
+
+// il n'y a plus de missile lancé
+
+bullet = false;
+
+// on le met de côté pour le cacher
+
+bulletcount[i][0] = -10;
+
+}
+
+}
+
+} }
+
+
+
+//////////////////////////////////////////////////////////////
+
+//
+
+// L'affichage du score
+
+//
+
+//////////////////////////////////////////////////////////////
+
+void drawScore() {
+
+// affiche le score
+
+fill(255,255,0);
+
+text("Score : " + score, width - 300, 20);
+
+text("Meilleur score : " + best, width - 300, 40);
+
+fill(255,255,0);
+
+}
+
+
+
+//////////////////////////////////////////////////////////////
+
+//
+
+// L'affichage du message "GAME OVER"
+
+//
+
+//////////////////////////////////////////////////////////////
+
+void gameOver() {
+
+pushStyle();
+
+textAlign(CENTER, CENTER);
+
+textFont(fonte32);
+
+fill(255,255,0);
+
+text("GAME OVER !!!", width/2, height/2);
+
+textFont(fonte16);
+
+text("Press space bar to restart", width/2 - 5, height/2 + 30);
+
+popStyle();
+
+}
+
+
+
+//////////////////////////////////////////////////////////////
+
+//
+
+// Pilote le canon et contrôle le lancement de missiles
+
+//
+
+//////////////////////////////////////////////////////////////
+
+void control() {
+
+if (keyPressed) {
+
+if (key == CODED) {
+
+// quand on appuie sur la flèche droite
+
+if (keyCode == RIGHT) {
+
+if (gunX < width - 25)
+
+gunX+=5;
+
+}
+
+// quand on appuie sur la flèche gauche
+
+else if (keyCode == LEFT) {
+
+if (gunX > 25)
+
+gunX-=5;
+
+}
+
+}
+
+// quand on appuie sur la barre d'espace
+
+else if (key == ' ') {
+
+// relance une nouvelle partie si c'était gameOver
+
+if (gameOver) {
+
+gameOver = false;
+
+newGame();
+
+}
+
+// sinon tire un missile
+
+else {
+
+if (!bullet)
+
+fire();
+
+}
+
+}
+
+}
+
+}
